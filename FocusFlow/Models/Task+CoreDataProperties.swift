@@ -106,3 +106,10 @@ extension Task {
     @objc(removeSessions:)
     @NSManaged public func removeFromSessions(_ values: NSSet)
 }
+
+// WHY Identifiable?
+// SwiftUI's ForEach needs each item to have a unique id.
+// By conforming Task to Identifiable and pointing to our
+// UUID, ForEach knows exactly which row is which —
+// essential for animations and swipe-to-delete to work correctly.
+extension Task: Identifiable {}
