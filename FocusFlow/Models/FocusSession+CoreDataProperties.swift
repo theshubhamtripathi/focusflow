@@ -40,3 +40,4 @@ extension FocusSession {
     var dateUnwrapped: Date { date ?? Date() }
     var startTimeUnwrapped: Date { startTime ?? Date() }
 }
+extension FocusSession: Identifiable {}

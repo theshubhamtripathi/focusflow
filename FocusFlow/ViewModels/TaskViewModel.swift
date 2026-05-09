@@ -10,6 +10,24 @@ import CoreData
 import SwiftUI
 import Combine
 
+enum TaskFilter: String, CaseIterable {
+    case all = "All"
+    case high = "High"
+    case medium = "Medium"
+    case low = "Low"
+    case overdue = "Overdue"
+    
+    var emoji: String {
+        switch self {
+        case .all:     return "📋"
+        case .high:    return "🔴"
+        case .medium:  return "🟡"
+        case .low:     return "🟢"
+        case .overdue: return "⚠️"
+        }
+    }
+}
+
 class TaskViewModel: ObservableObject {
     
     // MARK: - Properties
@@ -18,6 +36,9 @@ class TaskViewModel: ObservableObject {
     // tasks array is what the List will display
     @Published var tasks: [Task] = []
     @Published var showingAddTask = false
+    @Published var activeFilter: TaskFilter = .all
+    @Published var taskToEdit: Task? = nil
+    @Published var showingEditTask = false
     
     // Form fields for the Add Task sheet
     @Published var newTaskTitle = ""
@@ -143,5 +164,69 @@ class TaskViewModel: ObservableObject {
     var completionPercentage: Double {
         guard !tasks.isEmpty else { return 0 }
         return Double(completedTasks.count) / Double(tasks.count) * 100
+    }
+    
+    // MARK: - Filtered Tasks
+    var filteredTasks: [Task] {
+        switch activeFilter {
+        case .all:
+            return tasks
+        case .high:
+            return tasks.filter { $0.priority == 2 }
+        case .medium:
+            return tasks.filter { $0.priority == 1 }
+        case .low:
+            return tasks.filter { $0.priority == 0 }
+        case .overdue:
+            return tasks.filter {
+                guard let due = $0.dueDate else { return false }
+                return due < Date() && !$0.isCompleted
+            }
+        }
+    }
+
+    // MARK: - Edit Task
+    func startEditing(task: Task) {
+        taskToEdit = task
+        // Pre-fill form with existing values
+        newTaskTitle = task.titleUnwrapped
+        newTaskNotes = task.notesUnwrapped
+        newTaskPriority = task.priority
+        if let due = task.dueDate {
+            newTaskDueDate = due
+            showDueDate = true
+        }
+        showingEditTask = true
+    }
+
+    func updateTask() {
+        guard let task = taskToEdit else { return }
+        guard !newTaskTitle.trimmingCharacters(in: .whitespaces).isEmpty else { return }
+        
+        task.title = newTaskTitle
+        task.notes = newTaskNotes
+        task.priority = newTaskPriority
+        task.dueDate = showDueDate ? newTaskDueDate : nil
+        
+        saveContext()
+        resetForm()
+        fetchTasks()
+        
+        taskToEdit = nil
+        showingEditTask = false
+    }
+
+    // MARK: - Stats
+    func sessionCount(for task: Task) -> Int {
+        return task.sessionsArray.filter { $0.wasCompleted }.count
+    }
+
+    func focusTime(for task: Task) -> String {
+        let minutes = task.totalFocusMinutes
+        if minutes < 60 {
+            return "\(minutes)m"
+        } else {
+            return "\(minutes / 60)h \(minutes % 60)m"
+        }
     }
 }
