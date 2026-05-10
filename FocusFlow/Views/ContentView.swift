@@ -19,16 +19,10 @@ struct ContentView: View {
                     Label("Focus", systemImage: "timer")
                 }
             
-            NavigationView {
-                Text("🔥 Streaks\nComing Day 5")
-                    .multilineTextAlignment(.center)
-                    .font(.title2)
-                    .foregroundColor(.secondary)
-                    .navigationTitle("Streaks")
-            }
-            .tabItem {
-                Label("Streaks", systemImage: "flame")
-            }
+            StreakView(context: context)
+                .tabItem {
+                    Label("Streaks", systemImage: "flame")
+                }
             
             NavigationView {
                 Text("📊 Analytics\nComing Day 6")
