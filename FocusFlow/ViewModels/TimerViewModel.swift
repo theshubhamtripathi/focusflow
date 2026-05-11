@@ -1,7 +1,7 @@
 // TimerViewModel.swift
 // The brain of the Pomodoro timer.
 // Handles countdown, work/break cycles, and session tracking.
-
+import UserNotifications
 import Foundation
 import Combine
 import CoreData
@@ -193,12 +193,19 @@ class TimerViewModel: ObservableObject {
         timerSubscription = nil
         timerState = .finished
         
-        // Save to CoreData if it was a work session
         if isWorkSession {
             saveSession(wasCompleted: true)
+            DispatchQueue.main.async {
+                NotificationManager.shared
+                    .scheduleWorkSessionEndNotification()
+            }
+        } else {
+            DispatchQueue.main.async {
+                NotificationManager.shared
+                    .scheduleBreakEndNotification()
+            }
         }
         
-        // Move to next session after a short delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             self.moveToNextSession()
         }
@@ -263,3 +270,4 @@ class TimerViewModel: ObservableObject {
         reset()
     }
 }
+

@@ -24,16 +24,11 @@ struct ContentView: View {
                     Label("Streaks", systemImage: "flame")
                 }
             
-            NavigationView {
-                Text("📊 Analytics\nComing Day 6")
-                    .multilineTextAlignment(.center)
-                    .font(.title2)
-                    .foregroundColor(.secondary)
-                    .navigationTitle("Analytics")
-            }
-            .tabItem {
-                Label("Analytics", systemImage: "chart.bar")
-            }
+            // NOW REAL — replaces placeholder
+            AnalyticsView(context: context)
+                .tabItem {
+                    Label("Analytics", systemImage: "chart.bar")
+                }
         }
     }
 }
