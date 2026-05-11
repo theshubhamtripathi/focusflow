@@ -8,6 +8,7 @@ struct TimerView: View {
     
     @StateObject private var viewModel: TimerViewModel
     @Environment(\.managedObjectContext) private var context
+    @State private var showSettings = false
     
     init(context: NSManagedObjectContext) {
         _viewModel = StateObject(
@@ -49,11 +50,22 @@ struct TimerView: View {
                     
                     // MARK: Session info
                     sessionInfoView
-                    
                 }
                 .padding(.vertical, 24)
             }
             .navigationTitle("Focus Timer")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        showSettings = true
+                    } label: {
+                        Image(systemName: "gearshape")
+                    }
+                }
+            }
+            .sheet(isPresented: $showSettings) {
+                SettingsView()
+            }
             .sheet(isPresented: $viewModel.showTaskPicker) {
                 TaskPickerView(viewModel: viewModel)
             }
@@ -61,7 +73,6 @@ struct TimerView: View {
     }
     
     // MARK: - Session Dots
-    // Shows ○ ● ○ ○ style progress through the 4 sessions
     private var sessionDotsView: some View {
         HStack(spacing: 8) {
             ForEach(0..<viewModel.totalSessions, id: \.self) { index in
@@ -70,8 +81,12 @@ struct TimerView: View {
                           ? ringColor
                           : Color.gray.opacity(0.3))
                     .frame(width: 10, height: 10)
-                    .scaleEffect(index == viewModel.currentSession - 1 ? 1.3 : 1.0)
-                    .animation(.spring(), value: viewModel.currentSession)
+                    .scaleEffect(
+                        index == viewModel.currentSession - 1
+                        ? 1.3 : 1.0
+                    )
+                    .animation(.spring(),
+                               value: viewModel.currentSession)
             }
         }
     }
@@ -80,7 +95,6 @@ struct TimerView: View {
     private var controlButtonsView: some View {
         HStack(spacing: 24) {
             
-            // Reset button
             Button(action: viewModel.reset) {
                 Image(systemName: "arrow.counterclockwise")
                     .font(.title2)
@@ -90,7 +104,6 @@ struct TimerView: View {
                     .clipShape(Circle())
             }
             
-            // Start / Pause button (main CTA)
             Button {
                 if viewModel.timerState == .running {
                     viewModel.pause()
@@ -99,21 +112,21 @@ struct TimerView: View {
                 }
             } label: {
                 Image(systemName: viewModel.timerState == .running
-                      ? "pause.fill"
-                      : "play.fill")
+                      ? "pause.fill" : "play.fill")
                     .font(.title)
                     .foregroundColor(.white)
                     .frame(width: 80, height: 80)
                     .background(ringColor)
                     .clipShape(Circle())
-                    .shadow(color: ringColor.opacity(0.4), radius: 12, y: 6)
+                    .shadow(color: ringColor.opacity(0.4),
+                            radius: 12, y: 6)
             }
-            // WHY .scaleEffect on button press?
-            // Gives tactile feedback — the button feels physical.
-            .scaleEffect(viewModel.timerState == .running ? 1.05 : 1.0)
-            .animation(.spring(response: 0.3), value: viewModel.timerState)
+            .scaleEffect(
+                viewModel.timerState == .running ? 1.05 : 1.0
+            )
+            .animation(.spring(response: 0.3),
+                       value: viewModel.timerState)
             
-            // Skip button
             Button(action: viewModel.skip) {
                 Image(systemName: "forward.fill")
                     .font(.title2)
@@ -133,19 +146,17 @@ struct TimerView: View {
             HStack {
                 Image(systemName: "link")
                     .font(.subheadline)
-                
                 Text(viewModel.selectedTask?.titleUnwrapped
                      ?? "Link to a task (optional)")
                     .font(.subheadline)
                     .lineLimit(1)
-                
                 Spacer()
-                
                 Image(systemName: "chevron.right")
                     .font(.caption)
             }
             .foregroundColor(
-                viewModel.selectedTask != nil ? ringColor : .secondary
+                viewModel.selectedTask != nil
+                ? ringColor : .secondary
             )
             .padding(.horizontal, 20)
             .padding(.vertical, 14)
@@ -163,7 +174,6 @@ struct TimerView: View {
             Text("Session \(viewModel.currentSession) of \(viewModel.totalSessions)")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
-            
             Text(viewModel.isWorkSession
                  ? "Stay focused — you've got this! 💪"
                  : "Take a proper break, step away 🧘")

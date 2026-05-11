@@ -32,20 +32,26 @@ struct AnalyticsView: View {
             ScrollView {
                 VStack(spacing: 20) {
                     
-                    // MARK: Summary cards
-                    summaryCardsView
-                    
-                    // MARK: Focus time chart
-                    focusTimeChartCard
-                    
-                    // MARK: Task completion donut
-                    taskCompletionCard
-                    
-                    // MARK: Hourly pattern
-                    hourlyPatternCard
-                    
-                    // MARK: Insights
-                    insightsCard
+                    // Show empty state if no data at all
+                    if viewModel.weeklyData.allSatisfy({ $0.minutes == 0 })
+                        && viewModel.completionData.isEmpty {
+                        analyticsEmptyState
+                    } else {
+                        // MARK: Summary cards
+                        summaryCardsView
+                        
+                        // MARK: Focus time chart
+                        focusTimeChartCard
+                        
+                        // MARK: Task completion donut
+                        taskCompletionCard
+                        
+                        // MARK: Hourly pattern
+                        hourlyPatternCard
+                        
+                        // MARK: Insights
+                        insightsCard
+                    }
                     
                     Spacer(minLength: 20)
                 }
@@ -55,6 +61,52 @@ struct AnalyticsView: View {
             .onAppear {
                 viewModel.loadData()
             }
+        }
+    }
+
+    // MARK: - Analytics Empty State
+    private var analyticsEmptyState: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "chart.bar.xaxis")
+                .font(.system(size: 70))
+                .foregroundColor(.gray.opacity(0.4))
+            
+            Text("No data yet")
+                .font(.title2)
+                .fontWeight(.bold)
+            
+            Text("Complete some Pomodoro sessions\nto see your analytics here")
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+            
+            VStack(alignment: .leading, spacing: 12) {
+                tipRow(icon: "1.circle.fill",
+                       text: "Go to the Focus tab")
+                tipRow(icon: "2.circle.fill",
+                       text: "Start a Pomodoro timer")
+                tipRow(icon: "3.circle.fill",
+                       text: "Complete a 25-min session")
+                tipRow(icon: "4.circle.fill",
+                       text: "Come back here to see stats")
+            }
+            .padding(20)
+            .background(Color.gray.opacity(0.08))
+            .cornerRadius(16)
+            .padding(.horizontal)
+        }
+        .padding(.top, 40)
+    }
+
+    // MARK: - Tip Row Helper
+    private func tipRow(icon: String, text: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .foregroundColor(.blue)
+                .font(.title3)
+            Text(text)
+                .font(.subheadline)
+            Spacer()
         }
     }
     
